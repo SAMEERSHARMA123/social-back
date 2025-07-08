@@ -203,7 +203,6 @@ const resolvers = {
 
       const token = user_token(user);
       res.cookie("token", token, {
-  httpOnly: true,
   secure: true,
   sameSite: 'None',
 });
@@ -219,7 +218,6 @@ const resolvers = {
 
       const token = user_token(user);
      res.cookie("token", token, {
-  httpOnly: true,
   secure: true,
   sameSite: 'None',
 });
