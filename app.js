@@ -11,16 +11,16 @@ const DB = require('./DB/db');
 const userTypeDefs = require('./UserGraphQL/typeDefs');
 const userResolvers = require('./UserGraphQL/resolvers');
 
-
-
 // Connect to MongoDB
 DB();
 
 const app = express();
-app.use(cookieParser()); // ✅ Cookie parser middleware
+app.use(cookieParser());
+app.use(express.json()); // ✅ Body parser must come early
+
 const port = process.env.PORT || 5000;
 
-// ✅ Global CORS (for non-GQL routes)
+// ✅ Global CORS config
 app.use(cors({
   origin: 'https://social-front-virid.vercel.app',
   credentials: true,
@@ -29,8 +29,8 @@ app.use(cors({
 // ✅ File upload middleware
 app.use(graphqlUploadExpress({ maxFileSize: 10000000, maxFiles: 1 }));
 
-// Log incoming /graphql POST requests for debugging
-app.use('/graphql', express.json(), (req, res, next) => {
+// ✅ Log /graphql request bodies
+app.use('/graphql', (req, res, next) => {
   if (req.method === 'POST') {
     console.log('--- Incoming /graphql request body ---');
     console.log(JSON.stringify(req.body, null, 2));
@@ -41,10 +41,9 @@ app.use('/graphql', express.json(), (req, res, next) => {
 // ✅ Apollo Server Setup
 async function startServer() {
   const server = new ApolloServer({
-   typeDefs: [userTypeDefs],   // ✅ combined
-  resolvers: [userResolvers],
+    typeDefs: [userTypeDefs],
+    resolvers: [userResolvers],
     context: ({ req, res }) => {
-     
       const token = req.cookies.token;
       const io = req.app.get("io");
 
@@ -52,7 +51,7 @@ async function startServer() {
 
       try {
         const user = jwt.verify(token, process.env.JWT_SECRET);
-        return { req, res, user, io }; // ✅ user + res in context
+        return { req, res, user, io };
       } catch (err) {
         return { req, res, io };
       }
@@ -61,7 +60,6 @@ async function startServer() {
 
   await server.start();
 
-  // ✅ Apollo middleware with CORS
   server.applyMiddleware({
     app,
     cors: {
@@ -70,19 +68,13 @@ async function startServer() {
     },
   });
 
-  // ✅ Optional health check
   app.get('/', (req, res) => {
     res.send('🚀 Server is running...');
   });
 
-  // ✅ Start Express server
   app.listen(port, () => {
     console.log(`🚀 Server ready at http://localhost:${port}${server.graphqlPath}`);
   });
 }
 
 startServer();
-
-
-
-
