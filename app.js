@@ -22,7 +22,7 @@ const port = process.env.PORT || 5000;
 
 // ✅ Global CORS (for non-GQL routes)
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: 'https://social-front-virid.vercel.app',
   credentials: true,
 }));
 
@@ -65,7 +65,7 @@ async function startServer() {
   server.applyMiddleware({
     app,
     cors: {
-      origin: 'http://localhost:3000',
+      origin: 'https://social-front-virid.vercel.app',
       credentials: true,
     },
   });
